@@ -3025,7 +3025,30 @@ export default function App() {
                     </div>
                   </div>
                 )}
-
+                
+                {/* SELECT SPECIFIC STUDENT TO ASSIGN TO */}
+                {selectedCourse && (
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Assign To Student(s)</label>
+                    <select
+                      id="new-task-assigned-to"
+                      value={newTaskAssignedToEmail}
+                      onChange={(e) => setNewTaskAssignedToEmail(e.target.value)}
+                      className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white"
+                    >
+                      <option value="ALL">🏫 All Students Enrolled</option>
+                      {(enrollments[selectedCourse.id] || []).map(studentEmail => {
+                        const studentProfile = users[studentEmail] || { username: studentEmail };
+                        return (
+                          <option key={studentEmail} value={studentEmail}>
+                            👤 {studentProfile.username} ({studentEmail})
+                          </option>
+                        );
+                       })}
+                    </select>
+                  </div>
+                )}
+                
                 {/* PDF/MATERIALS FILE UPLOADER -> TRIGGERS FASTAPI VECTOR EMBEDDING LOGS */}
                 <div className="bg-slate-50 border border-dashed rounded-xl p-4 text-center cursor-pointer hover:bg-indigo-50/20 hover:border-indigo-400 transition-colors">
                   <Upload size={22} className="mx-auto text-indigo-500 mb-1" />
