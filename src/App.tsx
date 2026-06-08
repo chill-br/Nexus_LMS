@@ -3065,11 +3065,8 @@ export default function App() {
       {/* FOOTER */}
       <footer className="bg-white border-t border-gray-200 py-6 px-6 text-center text-xs text-gray-400 mt-auto font-medium shadow-inner">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p>© 2026 Nexus LMS & Co. Designed with high-density components and RAG-grounded search interfaces.</p>
+          <p>© 2026 Nexus LMS & Co.</p>
           <div className="flex gap-4">
-            <span className="hover:text-indigo-600 cursor-help">Postgres v15 with PGvector</span>
-            <span className="hover:text-indigo-600 cursor-help">FastAPI port: 8001</span>
-            <span className="text-emerald-500 font-bold block shrink-0">● Django Backend port: 8000</span>
           </div>
         </div>
       </footer>
