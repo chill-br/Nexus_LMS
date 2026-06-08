@@ -29,7 +29,8 @@ import {
   Upload,
   ArrowRight,
   BookMarked,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Download
 } from 'lucide-react';
 
 // --- TS Interfaces ---
@@ -342,7 +343,46 @@ export default function App() {
   const [indexingLogState, setIndexingLogState] = useState<string[]>([]);
   const [isIndexing, setIsIndexing] = useState(false);
   const [newTaskAssignedToEmail, setNewTaskAssignedToEmail] = useState<string>('ALL');
+  
+  // PWA App Installation hook state
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallBtn, setShowInstallBtn] = useState(false);
+  const [showHowToInstallModal, setShowHowToInstallModal] = useState(false);
 
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setShowInstallBtn(true);
+    };
+    
+    // Listen for install availability
+    window.addEventListener('beforeinstallprompt', handler);
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setShowInstallBtn(false);
+    }
+    
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handler);
+    };
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      if (outcome === 'accepted') {
+        setShowInstallBtn(false);
+      }
+      setDeferredPrompt(null);
+    } else {
+      // Prompt instructional modal for iOS / Safari or browsers without custom prompts
+      setShowHowToInstallModal(true);
+    }
+  };
+  
   // Helper for filtering visible tasks based on student assignedToEmail restriction
   const getVisibleTasks = (taskList: ClassworkTask[]) => {
     return taskList.filter(t => {
@@ -910,6 +950,16 @@ export default function App() {
 
         {/* User profile dropdown right corner */}
         <div className="flex items-center gap-3">
+                    {/* Install App Action */}
+          <button 
+            id="install-pwa-btn"
+            onClick={handleInstallApp}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-full border border-indigo-200 transition-colors shadow-sm cursor-pointer"
+            title="Install this application as an app"
+          >
+            <Download size={13} className="text-indigo-600 animate-bounce" />
+            <span>Install App</span>
+          </button>
           {currentUser ? (
             <div className="flex items-center gap-3">
               <div className="hidden lg:block text-right">
@@ -3105,6 +3155,76 @@ export default function App() {
                   </button>
                 </div>
               </form>
+            </motion.div>
+          </div>
+        )}
+        
+        {/* GUIDED HOW-TO-INSTALL PWA MODAL */}
+        {showHowToInstallModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95, y: 15 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 15 }}
+              className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-gray-100 text-left relative"
+            >
+              <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-2">
+                <Download size={22} className="text-indigo-600" />
+                <span>Install Nexus App</span>
+              </h3>
+              <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                Install this Academic CRM directly on your device or computer to run it fast, without address-bar clutter, as a native app!
+              </p>
+              
+              <div className="space-y-4">
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    1
+                      </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Chrome, Edge & Android Desktop</h4>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Look for the install icon <strong className="text-gray-700 font-bold">(+)</strong> or <strong className="text-gray-700 font-bold">"Install"</strong> inside your browser's horizontal address bar.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    2
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Safari / iOS (iPhones & iPads)</h4>
+                    <p className="text-xs text-gray-500 mt-1">
+                      1. Open Safari and view this webpage.<br />
+                      2. Tap the <strong className="text-indigo-600 font-bold">Share</strong> icon (the square with an upward arrow).<br />
+                      3. Scroll down and touch <strong className="text-gray-800 font-bold">"Add to Home Screen"</strong>.
+                    </p>
+                  </div>
+                  </div>
+
+                <div className="flex gap-3">
+                  <div className="w-6 h-6 rounded-full bg-cyan-50 text-cyan-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
+                    3
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Safari for macOS</h4>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Go to the Safari <strong className="text-gray-700 font-bold">File</strong> menu and select <strong className="text-gray-800 font-bold">"Add to Dock..."</strong>.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-2 mt-6 pt-3 border-t">
+                <button 
+                  id="close-how-to-install-btn"
+                  onClick={() => setShowHowToInstallModal(false)}
+                  className="bg-indigo-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors shadow cursor-pointer text-center w-full"
+                >
+                  Got it, close!
+                  </button>
+              </div>
             </motion.div>
           </div>
         )}
