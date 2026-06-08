@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  db:
+    image: ankane/pgvector:latest
+    environment:
+      POSTGRES_DB: nexus_db
+      POSTGRES_USER: nexus_user
+      POSTGRES_PASSWORD: nexus_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+
+  django:
+    build: 
+      context: .
+      dockerfile: ./backend_django/Dockerfile
+    volumes:
+      - ./backend_django:/app
+    environment:
+      - DATABASE_URL=postgresql://nexus_user:nexus_password@db:5432/nexus_db
+      - REDIS_URL=redis://redis:6379/0
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+      - redis
+
+  celery:
+    build: 
+      context: .
+      dockerfile: ./backend_django/Dockerfile
+    command: celery -A nexus_lms worker -l info
+    volumes:
+      - ./backend_django:/app
+    environment:
+      - DATABASE_URL=postgresql://nexus_user:nexus_password@db:5432/nexus_db
+      - REDIS_URL=redis://redis:6379/0
+    depends_on:
+      - db
+      - redis
+
+  fastapi:
+    build:
+      context: .
+      dockerfile: ./backend_fastapi/Dockerfile
+    volumes:
+        - ./backend_fastapi:/app
+    environment:
+      - DATABASE_URL=postgresql://nexus_user:nexus_password@db:5432/nexus_db
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+    ports:
+      - "8001:8001"
+    depends_on:
+      - db
+
+  ollama:
+    image: ollama/ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+volumes:
+  postgres_data:
+  ollama_data:

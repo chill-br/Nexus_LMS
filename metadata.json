@@ -1,0 +1,8 @@
+{
+  "name": "Nexus LMS",
+  "description": "A high-performance Learning Management System featuring a Django backend, FastAPI-powered RAG AI, and a multi-platform architecture.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
