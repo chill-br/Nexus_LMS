@@ -1041,7 +1041,7 @@ export default function App() {
                           Access Workspace
                         </button>
 
-                        <div className="mt-8 pt-4 border-t border-gray-100">
+                        {/* <div className="mt-8 pt-4 border-t border-gray-100">
                           <p className="text-[11px] text-gray-400 font-bold mb-2 uppercase tracking-wider text-center">Demo Staff / Student Credentials</p>
                           <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
                             <div>
@@ -1055,7 +1055,7 @@ export default function App() {
                               pswd: <span className="underline">password</span>
                             </div>
                           </div>
-                        </div>
+                        </div> */}
                       </form>
                     ) : (
                       /* --- REGISTER FORM --- */
