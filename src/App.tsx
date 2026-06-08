@@ -62,6 +62,7 @@ interface ClassworkTask {
   points: number;
   attachmentName?: string;
   createdAt: string;
+  assignedToEmail?: string;
 }
 
 interface StreamPost {
@@ -340,7 +341,18 @@ export default function App() {
   const [newTaskFile, setNewTaskFile] = useState<File | null>(null);
   const [indexingLogState, setIndexingLogState] = useState<string[]>([]);
   const [isIndexing, setIsIndexing] = useState(false);
+  const [newTaskAssignedToEmail, setNewTaskAssignedToEmail] = useState<string>('ALL');
 
+  // Helper for filtering visible tasks based on student assignedToEmail restriction
+  const getVisibleTasks = (taskList: ClassworkTask[]) => {
+    return taskList.filter(t => {
+      if (currentUser?.role === 'STUDENT') {
+        return !t.assignedToEmail || t.assignedToEmail === 'ALL' || t.assignedToEmail === currentUser.email;
+      }
+      return true;
+    });
+  };
+  
   // RAG Chat Buddy Sidebar
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
@@ -617,18 +629,23 @@ export default function App() {
       dueDate: newTaskType === 'ASSIGNMENT' ? newTaskDueDate : '',
       points: newTaskType === 'ASSIGNMENT' ? newTaskPoints : 0,
       attachmentName: newTaskFile ? newTaskFile.name : undefined,
-      createdAt: new Date().toISOString().substring(0, 10)
+      createdAt: new Date().toISOString().substring(0, 10),
+      assignedToEmail: newTaskAssignedToEmail
     };
 
     setTasks(prev => [...prev, taskObj]);
 
     // Feed a stream post automatically notifying users of the task assignment/material
+    const targetDescriptor = newTaskAssignedToEmail === 'ALL' 
+      ? 'all students' 
+      : `student ${users[newTaskAssignedToEmail]?.username || newTaskAssignedToEmail}`;
+
     const systemNotif: StreamPost = {
       id: `post-notif-${Date.now()}`,
       courseId: selectedCourse.id,
       authorName: currentUser?.username || 'Teacher UI',
       authorRole: currentUser?.role || 'TEACHER',
-      content: `${currentUser?.username} posted a new ${newTaskType === 'ASSIGNMENT' ? 'assignment' : 'material'}: "${newTaskTitle.trim()}"`,
+      content: `${currentUser?.username} posted a new ${newTaskType === 'ASSIGNMENT' ? 'assignment' : 'material'} for ${targetDescriptor}: "${newTaskTitle.trim()}"`,
       createdAt: new Date().toISOString()
     };
     setPosts(prev => [systemNotif, ...prev]);
@@ -643,6 +660,7 @@ export default function App() {
     setNewTaskInstructions('');
     setNewTaskPoints(100);
     setNewTaskFile(null);
+    setNewTaskAssignedToEmail('ALL');
     setShowCreateTaskModal(false);
     triggerToast(`New ${newTaskType.toLowerCase()} published!`);
   };
@@ -700,7 +718,7 @@ export default function App() {
           botResponse = `Examining chunk #4 from PDF query parameters. 'Attention Is All You Need' explains that transformers eliminate recurrent neural recurrence by using Multi-Head Scaled Dot-Product self-attention to route contextual weights in parallel.`;
           botCitations = ["attention_is_all_you_need.pdf"];
         } else if (queryLower.includes('lab') || queryLower.includes('assignment') || queryLower.includes('due') || queryLower.includes('task')) {
-          const classAssignments = tasks.filter(t => t.courseId === selectedCourse.id && t.type === 'ASSIGNMENT');
+          const classAssignments = getVisibleTasks(tasks).filter(t => t.courseId === selectedCourse.id && t.type === 'ASSIGNMENT');
           if (classAssignments.length > 0) {
             const listStr = classAssignments.map(a => `"${a.title}" (Due: ${a.dueDate || 'N/A'})`).join(', ');
             botResponse = `Scanning your class database... I found ${classAssignments.length} scheduled assignable tasks for ${courseName}: ${listStr}. Please read each set of instructions carefully.`;
@@ -1420,11 +1438,11 @@ export default function App() {
 
                             <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
                               <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">Tasks Due Soon</h4>
-                              {tasks.filter(t => t.courseId === selectedCourse.id && t.type === 'ASSIGNMENT').length === 0 ? (
+                              {getVisibleTasks(tasks).filter(t => t.courseId === selectedCourse.id && t.type === 'ASSIGNMENT').length === 0 ? (
                                 <p className="text-xs text-gray-500 italic">Woohoo, no hand-ins scheduled!</p>
                               ) : (
                                 <div className="space-y-3">
-                                  {tasks.filter(t => t.courseId === selectedCourse.id && t.type === 'ASSIGNMENT').slice(0, 2).map(tk => (
+                                  {getVisibleTasks(tasks).filter(t => t.courseId === selectedCourse.id && t.type === 'ASSIGNMENT').slice(0, 2).map(tk => (
                                     <div key={tk.id} className="text-xs border-b border-gray-100 pb-2 last:border-0 last:pb-0">
                                       <span className="font-bold text-gray-700 block truncate">{tk.title}</span>
                                       <span className="text-gray-400 block mt-0.5">Due: {tk.dueDate}</span>
@@ -1545,7 +1563,7 @@ export default function App() {
 
                         {/* List Lesson curriculum */}
                         <div className="space-y-4">
-                          {tasks.filter(t => t.courseId === selectedCourse.id).length === 0 ? (
+                          {getVisibleTasks(tasks).filter(t => t.courseId === selectedCourse.id).length === 0 ? (
                             <div className="bg-white border rounded-xl p-12 text-center text-gray-400">
                               No assignments or materials posted yet in this classwork module.
                             </div>
@@ -1560,14 +1578,21 @@ export default function App() {
                                 </h4>
 
                                 <div className="space-y-3">
-                                  {tasks.filter(t => t.courseId === selectedCourse.id && t.type === 'ASSIGNMENT').map(tk => (
+                                  {getVisibleTasks(tasks).filter(t => t.courseId === selectedCourse.id && t.type === 'ASSIGNMENT').map(tk => (
                                     <div 
                                       key={tk.id} 
                                       id={`task-item-${tk.id}`}
                                       className="bg-white border border-gray-200 p-4 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 hover:shadow-sm"
                                     >
                                       <div className="space-y-1">
+                                        <div className="flex items-center gap-2 flex-wrap">
                                         <h5 className="font-bold text-gray-800 text-sm">{tk.title}</h5>
+                                          {tk.assignedToEmail && tk.assignedToEmail !== 'ALL' && (
+                                            <span className="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md border border-purple-200 uppercase tracking-wide">
+                                              👤 Individual Assignment: {users[tk.assignedToEmail]?.username || tk.assignedToEmail}
+                                            </span>
+                                          )}
+                                        </div>
                                         <p className="text-xs text-gray-500 leading-relaxed max-w-2xl">{tk.instructions}</p>
                                         
                                         {tk.attachmentName && (
