@@ -21,5 +21,5 @@ class Profile(models.Model):
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
+def __str__(self):
         return f"{self.user.username}'s Profile"
