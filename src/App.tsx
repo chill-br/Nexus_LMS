@@ -343,7 +343,7 @@ export default function App() {
   const [indexingLogState, setIndexingLogState] = useState<string[]>([]);
   const [isIndexing, setIsIndexing] = useState(false);
   const [newTaskAssignedToEmail, setNewTaskAssignedToEmail] = useState<string>('ALL');
-  
+
   // PWA App Installation hook state
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showInstallBtn, setShowInstallBtn] = useState(false);
@@ -363,7 +363,7 @@ export default function App() {
     if (window.matchMedia('(display-mode: standalone)').matches) {
       setShowInstallBtn(false);
     }
-    
+
     return () => {
       window.removeEventListener('beforeinstallprompt', handler);
     };
@@ -382,7 +382,7 @@ export default function App() {
       setShowHowToInstallModal(true);
     }
   };
-  
+
   // Helper for filtering visible tasks based on student assignedToEmail restriction
   const getVisibleTasks = (taskList: ClassworkTask[]) => {
     return taskList.filter(t => {
@@ -392,7 +392,7 @@ export default function App() {
       return true;
     });
   };
-  
+
   // RAG Chat Buddy Sidebar
   const [isAiOpen, setIsAiOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
@@ -950,7 +950,7 @@ export default function App() {
 
         {/* User profile dropdown right corner */}
         <div className="flex items-center gap-3">
-                    {/* Install App Action */}
+          {/* Install App Action */}
           <button 
             id="install-pwa-btn"
             onClick={handleInstallApp}
@@ -960,6 +960,7 @@ export default function App() {
             <Download size={13} className="text-indigo-600 animate-bounce" />
             <span>Install App</span>
           </button>
+
           {currentUser ? (
             <div className="flex items-center gap-3">
               <div className="hidden lg:block text-right">
@@ -1109,7 +1110,7 @@ export default function App() {
                           Access Workspace
                         </button>
 
-                        {/* <div className="mt-8 pt-4 border-t border-gray-100">
+                        <div className="mt-8 pt-4 border-t border-gray-100">
                           <p className="text-[11px] text-gray-400 font-bold mb-2 uppercase tracking-wider text-center">Demo Staff / Student Credentials</p>
                           <div className="grid grid-cols-2 gap-2 text-[11px] text-gray-600 bg-gray-50 p-3 rounded-lg border border-gray-100">
                             <div>
@@ -1123,7 +1124,7 @@ export default function App() {
                               pswd: <span className="underline">password</span>
                             </div>
                           </div>
-                        </div> */}
+                        </div>
                       </form>
                     ) : (
                       /* --- REGISTER FORM --- */
@@ -1636,7 +1637,7 @@ export default function App() {
                                     >
                                       <div className="space-y-1">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                        <h5 className="font-bold text-gray-800 text-sm">{tk.title}</h5>
+                                          <h5 className="font-bold text-gray-800 text-sm">{tk.title}</h5>
                                           {tk.assignedToEmail && tk.assignedToEmail !== 'ALL' && (
                                             <span className="bg-purple-100 text-purple-800 text-[10px] font-extrabold px-2 py-0.5 rounded-md border border-purple-200 uppercase tracking-wide">
                                               👤 Individual Assignment: {users[tk.assignedToEmail]?.username || tk.assignedToEmail}
@@ -3075,7 +3076,7 @@ export default function App() {
                     </div>
                   </div>
                 )}
-                
+
                 {/* SELECT SPECIFIC STUDENT TO ASSIGN TO */}
                 {selectedCourse && (
                   <div>
@@ -3094,11 +3095,11 @@ export default function App() {
                             👤 {studentProfile.username} ({studentEmail})
                           </option>
                         );
-                       })}
+                      })}
                     </select>
                   </div>
                 )}
-                
+
                 {/* PDF/MATERIALS FILE UPLOADER -> TRIGGERS FASTAPI VECTOR EMBEDDING LOGS */}
                 <div className="bg-slate-50 border border-dashed rounded-xl p-4 text-center cursor-pointer hover:bg-indigo-50/20 hover:border-indigo-400 transition-colors">
                   <Upload size={22} className="mx-auto text-indigo-500 mb-1" />
@@ -3158,7 +3159,7 @@ export default function App() {
             </motion.div>
           </div>
         )}
-        
+
         {/* GUIDED HOW-TO-INSTALL PWA MODAL */}
         {showHowToInstallModal && (
           <div className="fixed inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4 z-50">
@@ -3180,7 +3181,7 @@ export default function App() {
                 <div className="flex gap-3">
                   <div className="w-6 h-6 rounded-full bg-indigo-50 text-indigo-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
                     1
-                      </div>
+                  </div>
                   <div>
                     <h4 className="text-xs font-bold text-gray-800 uppercase tracking-wider">Chrome, Edge & Android Desktop</h4>
                     <p className="text-xs text-gray-500 mt-1">
@@ -3201,7 +3202,7 @@ export default function App() {
                       3. Scroll down and touch <strong className="text-gray-800 font-bold">"Add to Home Screen"</strong>.
                     </p>
                   </div>
-                  </div>
+                </div>
 
                 <div className="flex gap-3">
                   <div className="w-6 h-6 rounded-full bg-cyan-50 text-cyan-700 flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">
@@ -3223,21 +3224,14 @@ export default function App() {
                   className="bg-indigo-600 text-white font-bold text-xs px-5 py-2.5 rounded-xl hover:bg-indigo-700 transition-colors shadow cursor-pointer text-center w-full"
                 >
                   Got it, close!
-                  </button>
+                </button>
               </div>
             </motion.div>
           </div>
         )}
       </AnimatePresence>
 
-      {/* FOOTER */}
-      <footer className="bg-white border-t border-gray-200 py-6 px-6 text-center text-xs text-gray-400 mt-auto font-medium shadow-inner">
-        <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p>© 2026 Nexus LMS & Co.</p>
-          <div className="flex gap-4">
-          </div>
-        </div>
-      </footer>
+
 
     </div>
   );
